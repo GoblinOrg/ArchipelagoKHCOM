@@ -52,6 +52,10 @@ class KHCOMContext(CommonContext):
                     os.remove(root+"/"+file)
 
     async def server_auth(self, password_requested: bool = False):
+        for root, dirs, files in os.walk(self.game_communication_path):
+            for file in files:
+                if file.find("obtain") <= -1:
+                    os.remove(root+"/"+file)
         if password_requested and not self.password:
             await super(KHCOMContext, self).server_auth(password_requested)
         await self.get_username()
