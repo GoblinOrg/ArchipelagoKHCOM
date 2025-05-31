@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from Options import Choice, Range, Option, Toggle, DeathLink, DefaultOnToggle, OptionSet, PerGameCommonOptions
+from Options import Choice, Range, Option, Toggle, DeathLink, DefaultOnToggle, OptionSet, PerGameCommonOptions, StartInventoryPool
 
 class PacksOrSets(Choice):
     """
@@ -11,6 +11,15 @@ class PacksOrSets(Choice):
     option_sets   = 1
     option_packs  = 2
     default       = 1
+
+class StartingPacks(Range):
+    """
+    If Packs are enabled, sets how many you start with
+    """
+    display_name = "Starting Packs"
+    default = 4
+    range_start = 0
+    range_end = 10
 
 class Zeroes(DefaultOnToggle):
     """
@@ -36,10 +45,23 @@ class EnemyCards(DefaultOnToggle):
     """
     display_name = "Enemy Cards"
 
+class StartingWorlds(Range):
+    """
+    Number of random world cards to start with in addition to Traverse Town, which is always available.
+    """
+    display_name = "Starting Worlds"
+    default = 3
+    range_start = 0
+    range_end = 11
+
+
 @dataclass
 class KHCOMOptions(PerGameCommonOptions):
     packs_or_sets: PacksOrSets
+    starting_packs: StartingPacks
     zeroes: Zeroes
     cure: Cure
     early_cure: EarlyCure
     enemy_cards: EnemyCards
+    starting_worlds: StartingWorlds
+    start_inventory_from_pool: StartInventoryPool
