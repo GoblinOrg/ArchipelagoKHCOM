@@ -50,20 +50,32 @@ class KHCOMWorld(World):
     def create_items(self):
         item_pool: List[KHCOMItem] = []
         self.multiworld.get_location("Final Marluxia", self.player).place_locked_item(self.create_item("Victory"))
-        starting_locations = get_locations_by_category("Starting")
-        starting_locations = random.sample(list(starting_locations.keys()),8)
-        starting_worlds = get_items_by_category("World Unlocks", [])
-        starting_worlds = random.sample(list(starting_worlds.keys()),3)
-        i = 0
-        while i < 8:
-            if i < 3:
-                self.multiworld.get_location(starting_locations[i], self.player).place_locked_item(self.create_item(starting_worlds[i]))
-            elif i < 7:
-                if self.options.packs_or_sets == "packs":
-                    self.multiworld.get_location(starting_locations[i], self.player).place_locked_item(self.create_item("Bronze Card Pack"))
-            elif self.options.early_cure:
-                self.multiworld.get_location(starting_locations[i], self.player).place_locked_item(self.create_item("Card Set Cure 4-6"))
-            i = i + 1
+        # Handle starting packs
+        if self.options.packs_or_sets == "packs" and self.options.starting_packs > 0:
+            i = 0
+            while i < self.options.starting_packs:
+                self.multiworld.push_precollected(self.create_item("Bronze Card Pack"))
+                i = i + 1
+        # Handle starting worlds
+        starting_worlds = []
+        if self.options.starting_worlds > 0:
+            possible_starting_worlds = [
+                "World Card Wonderland",
+                "World Card Olympus Coliseum",
+                "World Card Agrabah",
+                "World Card Monstro",
+                "World Card Atlantica",
+                "World Card Halloween Town",
+                "World Card Neverland",
+                "World Card Hollow Bastion",
+                "World Card 100 Acre Wood",
+                "World Card Twilight Town",
+                "World Card Destiny Islands"]
+            starting_worlds = self.random.sample(possible_starting_worlds, min(self.options.starting_worlds.value, len(possible_starting_worlds)))
+            for starting_world in starting_worlds:
+                self.multiworld.push_precollected(self.create_item(starting_world))
+        if self.options.early_cure:
+            self.multiworld.push_precollected(self.create_item("Card Set Cure 4-6"))
         total_locations = len(self.multiworld.get_unfilled_locations(self.player))
         for name, data in item_table.items():
             quantity = data.max_quantity
@@ -71,8 +83,8 @@ class KHCOMWorld(World):
             # Ignore filler, it will be added in a later stage.
             if data.category not in ["World Unlocks", "Gold Map Cards", "Friend Cards"]:
                 continue
-            if name not in starting_worlds:
-                item_pool += [self.create_item(name) for _ in range(0, quantity)]
+            elif name not in starting_worlds:
+                item_pool.append(self.create_item(name))
 
         # Fill any empty locations with filler items.
         item_names = []
